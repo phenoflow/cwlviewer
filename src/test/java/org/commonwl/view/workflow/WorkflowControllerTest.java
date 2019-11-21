@@ -19,10 +19,10 @@
 
 package org.commonwl.view.workflow;
 
-import org.commonwl.view.cwl.CWLService;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -34,11 +34,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.commonwl.view.cwl.CWLService;
 import org.commonwl.view.git.GitDetails;
 import org.commonwl.view.graphviz.GraphVizService;
 import org.commonwl.view.researchobject.ROBundleNotFoundException;
@@ -376,4 +378,69 @@ public class WorkflowControllerTest {
 
     }
 
+    @Test
+    public void downloadGraphSvgFromFile() throws Exception {
+
+        // Mock service to return a bundle file and then throw ROBundleNotFoundException
+        WorkflowService mockWorkflowService = Mockito.mock(WorkflowService.class);
+
+        // Mock controller/MVC
+        CWLService mockCWLService = Mockito.mock(CWLService.class);
+		GraphVizService graphVizService = Mockito.mock(GraphVizService.class);
+		
+		when(graphVizService.getGraphStream(anyString(), eq("svg")))
+				.thenReturn(getClass().getResourceAsStream("/graphviz/testWorkflow.dot"));
+		Workflow mockWorkflow = Mockito.mock(Workflow.class);
+		when(mockWorkflow.getVisualisationDot()).thenReturn("");// Not actually dot
+		when(mockCWLService.parseWorkflowNative(Matchers.any(InputStream.class), eq(""), anyString()))
+				.thenReturn(mockWorkflow);
+		
+		WorkflowController workflowController = new WorkflowController(
+                Mockito.mock(WorkflowFormValidator.class),
+                mockWorkflowService,
+                graphVizService,
+                mockCWLService);
+        MockMvc mockMvc = MockMvcBuilders
+                .standaloneSetup(workflowController)
+                .build();
+        
+        mockMvc.perform(post("/graph/svg"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("image/svg+xml"));
+
+    }
+
+    @Test
+    public void downloadGraphPngFromFile() throws Exception {
+
+        // Mock service to return a bundle file and then throw ROBundleNotFoundException
+        WorkflowService mockWorkflowService = Mockito.mock(WorkflowService.class);
+
+        // Mock controller/MVC
+        CWLService mockCWLService = Mockito.mock(CWLService.class);
+		GraphVizService graphVizService = Mockito.mock(GraphVizService.class);
+		
+		when(graphVizService.getGraphStream(anyString(), eq("png")))
+				.thenReturn(getClass().getResourceAsStream("/graphviz/testWorkflow.dot"));
+		Workflow mockWorkflow = Mockito.mock(Workflow.class);
+		when(mockWorkflow.getVisualisationDot()).thenReturn("");// Not actually dot
+		when(mockCWLService.parseWorkflowNative(Matchers.any(InputStream.class), eq(""), anyString()))
+				.thenReturn(mockWorkflow);
+		
+		WorkflowController workflowController = new WorkflowController(
+                Mockito.mock(WorkflowFormValidator.class),
+                mockWorkflowService,
+                graphVizService,
+                mockCWLService);
+        MockMvc mockMvc = MockMvcBuilders
+                .standaloneSetup(workflowController)
+                .build();
+        
+        mockMvc.perform(post("/graph/png"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("image/png"));
+
+    }
+    
+    
 }
