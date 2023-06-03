@@ -124,10 +124,34 @@ digraph G {
 <div class="container" role="main" id="main">
     <div class="row">
         <div class="col-md-12" >
-            <h2>Workflow: <span th:text="${workflow.label}">Workflow Name</span></h2>
+            <h2>Disease: <span id="name"></span></h2>
+            <div style = 'border:1px solid black; border-radius: 15px;padding: 5px;padding-bottom: 50px;'>
+                <h4>Switch to another branch</h4>
+                <form id="add" action="#" th:action="@{/workflows}" th:object="${workflowForm}" method="POST">
+                    <div hidden class="form-group">
+                        <input readonly class="form-control" id="url" name="url">
+                        </input>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 form-group">
+                            <label class="control-label" for="branch">Branch selection</label>
+                            <select class="form-select form-control" name="branch" id="branch" aria-label="Default select example" onchange="select_path()">
+                            </select>
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label class="control-label" for="path">Main CWL file</label>
+                            <input type="text" class="form-control" name="path" id="path" readonly/>
+                        </div>
+                    </div>
+                    <div class="graph-menu hidden-print pull-right" id="graph-menu">
+                        <button class="btn btn-primary" type="submit" id="parse">Switch</button>
+                        <button type="button" id="reset" class="btn btn-primary" onclick="reset1()" disabled>Reset</button>
+                    </div>
+                </form>
+            </div>
         </div>
-        <div class="col-md-6">
-            <a th:href="@{${workflow.retrievedFrom.getUrl()}}" href="#" rel="noopener" target="_blank" style="text-decoration:none;">
+        <div class="col-md-6" style="padding-top: 30px;">
+            <a th:href="@{${workflow.retrievedFrom.getUrl()}}" href="#" rel="noopener" target="_blank" style="text-decoration:none;" id="thisurl">
                 <img th:if="${workflow.retrievedFrom.getType().name() == 'GITHUB'}" id="gitLogo" src="../static/img/GitHub-Mark-32px.png" th:src="@{/img/GitHub-Mark-32px.png}" width="24" height="24" />
                 <img th:unless="${workflow.retrievedFrom.getType().name() == 'GITHUB'}" id="gitLogo" src="../static/img/gitlogo.png" th:src="@{/img/gitlogo.png}" width="30" height="30" />
             </a>

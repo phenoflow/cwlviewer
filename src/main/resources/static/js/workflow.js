@@ -252,6 +252,8 @@ require(['jquery', 'bootstrap.modal', 'svg-pan-zoom', 'hammerjs', 'jquery.svg'],
         function goToSubworkflow(node) {
             var matchingTableRow = getTableRow(node);
             var subworkflowLink = $(matchingTableRow).find("a.subworkflow");
+            console.log(1);
+            console.log(subworkflowLink);
             if (subworkflowLink.length > 0) {
                 location.href = subworkflowLink.attr("href");
             }
@@ -436,3 +438,130 @@ require(['jquery', 'bootstrap.tooltip', 'bootstrap.dropdown'],
         // Alterative notation as only a single data-toggle attribute is allowed
         $('[data-tooltip="true"]').tooltip();
     });
+
+const org = 'phenoflow';
+
+var disease = document.getElementById("name");
+var disease_selection = document.getElementById("url");
+var branch_selection = document.getElementById("branch");
+var url = document.getElementById("thisurl").href;
+var main_path = document.getElementById('path');
+var button = document.getElementById("parse");
+var reset = document.getElementById("reset");
+var array = url.split("/");
+var path = array[array.length-1];
+var branch;
+var repo;
+
+function getElements(array){
+    if (array[array.length - 3] == 'blob'){
+        branch = array[array.length-2];
+        repo = array[array.length-4];
+    }
+    else{
+        branch = 'main';
+        repo = array[array.length-2];
+    }
+}
+
+getElements(array);
+
+var query = 'https://api.github.com/repos/' + org + '/' + repo + '/branches';
+
+disease_selection.value = url;
+function load_branch(){
+    var branches = [];
+    let xhttp = new XMLHttpRequest();
+    xhttp.open('GET', query, true);
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var all = JSON.parse(this.response);
+            if (all.length > 1){
+                all.forEach(element => {
+                    branches.push(element['name']);
+                });
+            }
+            else {
+                branches.push(all[0]['name']);
+            }
+            for(var i=0;i<branches.length;++i){
+                var option = '';
+                if (branches[i] == branch){
+                    option = '<option value="'+ branches[i]+'" selected>'+branches[i]+'</option>';
+                }
+                else{
+                    option = '<option value="'+ branches[i]+'">'+branches[i]+'</option>';
+                }
+                branch_selection.innerHTML += option;
+            }
+            
+        }
+        select_path();
+    }
+    xhttp.send();
+}
+
+function startWithUpper(c){
+            if (c.charAt(0) == c.charAt(0).toUpperCase()){
+                return true;
+            }
+            return false;
+        }
+
+function isMainCWL(s){
+    if (startWithUpper(s) && s.endsWith('.cwl') && !s.includes('inputs')){
+        return true;
+    }
+    return false;
+}
+
+function select_path(){
+    if (branch_selection.value != ''){
+        main_path.innerHTML = '';
+        var quest = 'https://api.github.com/repos/' + org + '/' + repo + '/git/trees/' + branch_selection.value;
+        let xhttp = new XMLHttpRequest();
+        xhttp.open('GET', quest, true);
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) 
+            {
+                if (branch_selection.value == branch){
+                    button.disabled = true;
+                    button.innerHTML = 'Current branch';
+                    main_path.value = path;
+                    reset.disabled = true;
+                }
+                else{
+                    reset.disabled = false;
+                    button.innerHTML = 'Switch branch';
+                    var a = JSON.parse(this.response);
+                    if (a['tree'].length < 1){
+                        main_path.value = 'Empty branch';
+                        button.disabled = true;
+                    }
+                    else{
+                        button.disabled = true;
+                        main_path.value= 'No main file found';
+                        for (var i = 0; i < a['tree'].length; ++i){
+                            if (isMainCWL(a['tree'][i]['path'])){
+                                main_path.value = a['tree'][i]['path'];
+                                button.disabled = false;
+                                break;
+                            }
+                        }
+                    }
+                    
+                }
+            }
+        }
+        xhttp.send();
+    }
+}
+
+function reset1(){
+    branch_selection.value = branch; 
+    select_path();
+    // reset.disabled = true;
+}
+
+disease.innerHTML = repo;
+load_branch();
