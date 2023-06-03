@@ -98,9 +98,11 @@ function loadInfo(){
         if (this.readyState == 4 && this.status == 200) {
             var all = JSON.parse(this.response);
             all.forEach(element => {
-                URLs.push(element['clone_url']);
-                m.set(element['clone_url'], element['name']);
-                defaults.set(element['clone_url'], element['default_branch']);
+                if(element['name'].includes('---')) {
+                    URLs.push(element['clone_url']);
+                    m.set(element['clone_url'], element['name']);
+                    defaults.set(element['clone_url'], element['default_branch']);
+                }
             });
             loadUrls();
         }
