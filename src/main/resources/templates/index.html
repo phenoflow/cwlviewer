@@ -42,7 +42,7 @@
                             Research Object Bundle</a>
                         (zip file with metadata in a manifest), allowing it to be easily viewed and shared.</p>
                     <div class="alert alert-info">
-                        <p>Want to make your workflows look their best in CWL Viewer? Find out about <a href="/about">CWL recommended practices</a></p>
+                        <p>Want to make your workflows look their best in CWL Viewer? Find out about <a href="/phenoflow/about">CWL recommended practices</a></p>
                     </div>
 
                     <hr/>
@@ -54,7 +54,7 @@
                         <a class="example" href="https://github.com/common-workflow-language/workflows/tree/master/workflows/compile/compile1.cwl">compile</a>,
                         <a class="example" href="https://github.com/common-workflow-language/workflows/tree/master/workflows/make-to-cwl/dna.cwl">make-to-cwl</a>,
                         <a class="example" href="https://github.com/common-workflow-language/workflows/tree/lobstr-v1/workflows/lobSTR/lobSTR-workflow.cwl">lobSTR</a>
-                        or <a href="/workflows">explore the collection</a>
+                        or <a href="/phenoflow/workflows">explore the collection</a>
                     </div>
                     <form id="add" action="#" th:action="@{/workflows}" th:object="${workflowForm}" method="POST">
                         <div class="alert alert-danger" th:if="${errors} != null and ${errors.hasErrors()}">
@@ -90,6 +90,6 @@
 
         <div th:replace="fragments/footer :: copy"></div>
 
-        <script src="/bower_components/requirejs/require.js" data-main="/js/main.js"></script>
+        <script src="/phenoflow/bower_components/requirejs/require.js" data-main="/phenoflow/js/main.js"></script>
     </body>
 </html>

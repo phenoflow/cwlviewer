@@ -21,7 +21,7 @@
  * RequireJS configuration with all possible dependencies
  */
 requirejs.config({
-    baseUrl: '/bower_components',
+    baseUrl: '/phenoflow/bower_components',
     paths: {
         jquery: 'jquery/dist/jquery.min',
         highlight: 'highlightjs/highlight.pack.min'

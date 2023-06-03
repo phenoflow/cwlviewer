@@ -164,7 +164,7 @@ public class WorkflowJSONController {
             return new ResponseEntity<Map>(message, HttpStatus.BAD_REQUEST);
           }
         }
-        response.setHeader("Location", "/queue/" + queued.getId());
+        response.setHeader("Location", "/phenoflow/queue/" + queued.getId());
         response.setStatus(HttpServletResponse.SC_ACCEPTED);
         return null;
       } else {
@@ -259,7 +259,7 @@ public class WorkflowJSONController {
     if (queuedWorkflow.getCwltoolStatus() == SUCCESS) {
       GitDetails gitInfo = queuedWorkflow.getTempRepresentation().getRetrievedFrom();
       String resourceLocation = gitInfo.getInternalUrl();
-      response.setHeader("Location", resourceLocation);
+      response.setHeader("Location", "/phenoflow/" + resourceLocation);
       response.setStatus(HttpServletResponse.SC_SEE_OTHER);
     }
     return queuedWorkflow;

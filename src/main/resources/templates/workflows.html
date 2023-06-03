@@ -34,7 +34,7 @@
             <div class="row">
                 <div class="col-md-12" role="main" id="main">
                     <h1>Explore Workflows</h1>
-                    <p>View already parsed workflows here or <a href="/" alt="homepage">click here to add your own</a></p>
+                    <p>View already parsed workflows here or <a href="/phenoflow" alt="homepage">click here to add your own</a></p>
 
                     <form action="/workflows" method="GET">
                         <div class="input-group">
@@ -46,7 +46,7 @@
                     </form>
 
                     <div th:unless="${#strings.isEmpty(search)}">
-                        <h3>Showing results for "<span th:text="${search}">query</span>" <a href="/workflows">(Show all)</a></h3>
+                        <h3>Showing results for "<span th:text="${search}">query</span>" <a href="/phenoflow/workflows">(Show all)</a></h3>
                     </div>
 
                     <div class="table-responsive">

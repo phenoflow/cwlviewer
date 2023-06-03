@@ -26,7 +26,7 @@
     <meta name="twitter:site" content="@commonwl" />
     <meta name="twitter:title" th:content="${'CWL Workflow: ' + queued.tempRepresentation.label}" />
     <meta name="twitter:description" th:if="${queued.tempRepresentation.doc != null}" th:content="${queued.tempRepresentation.doc}" />
-    <meta name="twitter:image" th:content="${appURL + '/workflows/' + queued.tempRepresentation.id + '/graph/png'}" />
+    <meta name="twitter:image" th:content="${appURL + '/phenoflow/workflows/' + queued.tempRepresentation.id + '/graph/png'}" />
     <title>Common Workflow Language Viewer</title>
     <link rel="stylesheet" th:href="@{/bower_components/bootstrap/dist/css/bootstrap.min.css}" href="../static/bower_components/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" type="text/css" th:href="@{/css/main-20180518.css}" href="../static/css/main-20180518.css" />
@@ -66,6 +66,6 @@
 
 <div th:replace="fragments/footer :: copy"></div>
 
-<script src="/bower_components/requirejs/require.js" data-main="/js/loading.js"></script>
+<script src="/phenoflow/bower_components/requirejs/require.js" data-main="/phenoflow/js/loading.js"></script>
 </body>
 </html>
