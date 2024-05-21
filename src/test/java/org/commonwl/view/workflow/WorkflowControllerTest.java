@@ -490,4 +490,22 @@ public class WorkflowControllerTest {
         .andExpect(status().isOk())
         .andExpect(content().contentType("image/png"));
   }
+
+  @Test
+  public void testGetPhenoflowURL() throws Exception {
+
+    WorkflowController workflowController =
+        new WorkflowController(
+            Mockito.mock(WorkflowFormValidator.class),
+            Mockito.mock(WorkflowService.class),
+            Mockito.mock(GraphVizService.class),
+            Mockito.mock(CWLService.class));
+
+    MockMvc mockMvc = MockMvcBuilders.standaloneSetup(workflowController).build();
+
+    mockMvc
+        .perform(get("/phenotype/all/PH2"))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType("application/json"));
+  }
 }

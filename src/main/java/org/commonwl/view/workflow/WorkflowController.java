@@ -19,12 +19,19 @@
 
 package org.commonwl.view.workflow;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.stream.StreamSupport;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -663,5 +670,65 @@ public class WorkflowController {
         cwlService.parseWorkflowNative(in, null, "workflow"); // first workflow will do
     InputStream out = graphVizService.getGraphStream(workflow.getVisualisationDot(), format);
     return new InputStreamResource(out);
+  }
+
+  /**
+   * Obtain the full CWLViewer link for a Phenoflow phenotype, based on a searched ID
+   *
+   * @param id ID to search on
+   */
+  @GetMapping(
+      value = {"/phenotype/all/{id}"},
+      produces = "application/json")
+  @ResponseBody
+  public String getPhenoflowURL(
+      @PathVariable("id") String id, HttpServletRequest request, HttpServletResponse response)
+      throws IOException {
+    URL url = new URL(Phenoflow.GITHUB_API_URL.toString());
+    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+    connection.setRequestMethod("GET");
+    connection.setRequestProperty("Accept", "application/vnd.github+json");
+    connection.setRequestProperty("X-GitHub-Api-Version", "2022-11-28");
+    int responseCode = connection.getResponseCode();
+
+    if (responseCode == HttpURLConnection.HTTP_OK) {
+      BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+      StringBuilder reply = new StringBuilder();
+      String inputLine;
+      while ((inputLine = in.readLine()) != null) {
+        reply.append(inputLine);
+      }
+      in.close();
+
+      ObjectMapper mapper = new ObjectMapper();
+      ArrayNode rootNode = (ArrayNode) mapper.readTree(reply.toString());
+      ArrayNode matches =
+          StreamSupport.stream(rootNode.spliterator(), false)
+              .filter(
+                  node -> node.has("description") && node.get("description").asText().endsWith(id))
+              .map(
+                  node ->
+                      node.has("name") && node.has("default_branch")
+                          ? mapper
+                              .createObjectNode()
+                              .put(
+                                  "name",
+                                  Phenoflow.URL
+                                      + "/workflows/"
+                                      + Phenoflow.GITHUB_URL
+                                      + "/"
+                                      + node.get("name").asText()
+                                      + "/blob/"
+                                      + node.get("default_branch").asText()
+                                      + "/"
+                                      + node.get("name").asText().split("---")[0]
+                                      + ".cwl")
+                          : null)
+              .collect(mapper::createArrayNode, ArrayNode::add, ArrayNode::addAll);
+      return mapper.writeValueAsString(matches);
+    } else {
+      System.out.println("GET request failed: " + responseCode);
+      return "";
+    }
   }
 }
