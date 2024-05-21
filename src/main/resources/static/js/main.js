@@ -92,23 +92,32 @@ var defaults = new Map();
 var URLs = [];
 
 function loadInfo(){
-    let xhttp = new XMLHttpRequest();
-    xhttp.open('GET', searchQueryRepos, true);
-    xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            var all = JSON.parse(this.response);
-            all.forEach(element => {
-                if(element['name'].includes('---')) {
-                    URLs.push(element['clone_url']);
-                    m.set(element['clone_url'], element['name']);
-                    defaults.set(element['clone_url'], element['default_branch']);
+    Promise.all(Array.from({ length: 11 }, function(element, index) {
+        return new Promise(function(resolve, reject) {
+            let xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    let all = JSON.parse(this.response);
+                    all.forEach(element => {
+                        if(element['name'].includes('---')) {
+                            URLs.push(element['clone_url']);
+                            m.set(element['clone_url'], element['name']);
+                            defaults.set(element['clone_url'], element['default_branch']);
+                        }
+                    });
+                    resolve()
                 }
-            });
-            loadUrls();
-        }
-    }
-    
-    xhttp.send();
+            }
+            xhttp.open('GET', searchQueryRepos + '?per_page=100&page=' + (index+1), true);
+            xhttp.send();
+        });
+    })).then(function() {
+        URLs.sort();
+        loadUrls();
+    })
+    .catch(function(error) {
+        console.error(error)
+    })
 }
 
 
