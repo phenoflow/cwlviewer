@@ -92,32 +92,42 @@ var defaults = new Map();
 var URLs = [];
 
 function loadInfo(){
-    Promise.all(Array.from({ length: 11 }, function(element, index) {
-        return new Promise(function(resolve, reject) {
-            let xhttp = new XMLHttpRequest();
-            xhttp.onreadystatechange = function() {
-                if (this.readyState == 4 && this.status == 200) {
-                    let all = JSON.parse(this.response);
-                    all.forEach(element => {
-                        if(element['name'].includes('---')) {
-                            URLs.push(element['clone_url']);
-                            m.set(element['clone_url'], element['name']);
-                            defaults.set(element['clone_url'], element['default_branch']);
-                        }
-                    });
-                    resolve()
-                }
-            }
-            xhttp.open('GET', searchQueryRepos + '?per_page=100&page=' + (index+1), true);
-            xhttp.send();
-        });
-    })).then(function() {
-        URLs.sort();
+    if((storedURLs = localStorage.getItem("URLs")) && (storedM = localStorage.getItem("m")) && (storedDefaults = localStorage.getItem("defaults"))) {
+        URLs = JSON.parse(storedURLs);
+        m = new Map(JSON.parse(storedM));
+        defaults = new Map(JSON.parse(storedDefaults));
         loadUrls();
-    })
-    .catch(function(error) {
-        console.error(error)
-    })
+    } else {
+        Promise.all(Array.from({ length: 11 }, function(element, index) {
+            return new Promise(function(resolve, reject) {
+                let xhttp = new XMLHttpRequest();
+                xhttp.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        let all = JSON.parse(this.response);
+                        all.forEach(element => {
+                            if(element['name'].includes('---')) {
+                                URLs.push(element['clone_url']);
+                                m.set(element['clone_url'], element['name']);
+                                defaults.set(element['clone_url'], element['default_branch']);
+                            }
+                        });
+                        resolve()
+                    }
+                }
+                xhttp.open('GET', searchQueryRepos + '?per_page=100&page=' + (index+1), true);
+                xhttp.send();
+            });
+        })).then(function() {
+            URLs.sort();
+            localStorage.setItem("URLs", JSON.stringify(URLs));
+            localStorage.setItem("m", JSON.stringify(Array.from(m.entries())));
+            localStorage.setItem("defaults", JSON.stringify(Array.from(defaults.entries())));
+            loadUrls();
+        })
+        .catch(function(error) {
+            console.error(error)
+        })
+    }
 }
 
 
