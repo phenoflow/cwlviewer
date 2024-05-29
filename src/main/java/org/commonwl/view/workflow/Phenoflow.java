@@ -3,7 +3,7 @@ package org.commonwl.view.workflow;
 public enum Phenoflow {
   URL("https://kclhi.org/phenoflow"),
   GITHUB_URL("github.com/phenoflow"),
-  GITHUB_API_URL("https://api.github.com/orgs/phenoflow/repos");
+  GITHUB_API_URL("https://api.github.com");
 
   private final String address;
 

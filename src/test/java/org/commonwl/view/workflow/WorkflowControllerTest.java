@@ -507,5 +507,10 @@ public class WorkflowControllerTest {
         .perform(get("/phenotype/all/PH222"))
         .andExpect(status().isOk())
         .andExpect(content().contentType("application/json"));
+
+    mockMvc
+        .perform(get("/phenotype/all/PH2222"))
+        .andExpect(status().isOk())
+        .andExpect(content().string("{}"));
   }
 }

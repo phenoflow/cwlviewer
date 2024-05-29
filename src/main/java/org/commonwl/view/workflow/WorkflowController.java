@@ -19,8 +19,9 @@
 
 package org.commonwl.view.workflow;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -31,7 +32,6 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
-import java.util.stream.StreamSupport;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -61,6 +61,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.servlet.view.RedirectView;
 
 @Controller
 public class WorkflowController {
@@ -672,6 +673,19 @@ public class WorkflowController {
     return new InputStreamResource(out);
   }
 
+  private String createPhenoflowURL(String name, String branch) {
+    return Phenoflow.URL
+        + "/workflows/"
+        + Phenoflow.GITHUB_URL
+        + "/"
+        + name
+        + "/blob/"
+        + branch
+        + "/"
+        + name.split("---")[0]
+        + ".cwl";
+  }
+
   /**
    * Obtain the full CWLViewer link for a Phenoflow phenotype, based on a searched ID
    *
@@ -681,61 +695,46 @@ public class WorkflowController {
       value = {"/phenotype/all/{id}"},
       produces = "application/json")
   @ResponseBody
-  public String getPhenoflowURL(
-      @PathVariable("id") String id, HttpServletRequest request, HttpServletResponse response)
-      throws IOException {
+  public String getPhenoflowURL(@PathVariable("id") String id) throws IOException {
     ObjectMapper JSONMapper = new ObjectMapper();
-    ArrayNode githubReplyJSON = JSONMapper.createArrayNode(),
-        githubRepliesJSON = JSONMapper.createArrayNode();
-    int page = 1;
-    while (githubReplyJSON.size() % 100 == 0) {
-      URL githubRepoURL =
-          new URL(Phenoflow.GITHUB_API_URL.toString() + "?per_page=100&page=" + page++);
-      HttpURLConnection githubConnection = (HttpURLConnection) githubRepoURL.openConnection();
-      githubConnection.setRequestMethod("GET");
-      githubConnection.setRequestProperty("Accept", "application/vnd.github+json");
-      githubConnection.setRequestProperty("X-GitHub-Api-Version", "2022-11-28");
-      int responseCode = githubConnection.getResponseCode();
+    ObjectNode reply = JSONMapper.createObjectNode();
+    URL githubRepoURL =
+        new URL(
+            Phenoflow.GITHUB_API_URL.toString()
+                + "/search/repositories?q="
+                + id
+                + "+org:Phenoflow");
+    HttpURLConnection githubConnection = (HttpURLConnection) githubRepoURL.openConnection();
+    githubConnection.setRequestMethod("GET");
+    githubConnection.setRequestProperty("Accept", "application/vnd.github+json");
+    githubConnection.setRequestProperty("X-GitHub-Api-Version", "2022-11-28");
+    int responseCode = githubConnection.getResponseCode();
 
-      if (responseCode == HttpURLConnection.HTTP_OK) {
-        BufferedReader in =
-            new BufferedReader(new InputStreamReader(githubConnection.getInputStream()));
-        StringBuilder githubReply = new StringBuilder();
-        String inputLine;
-        while ((inputLine = in.readLine()) != null) {
-          githubReply.append(inputLine);
-        }
-        in.close();
-
-        githubReplyJSON = (ArrayNode) JSONMapper.readTree(githubReply.toString());
-        githubRepliesJSON.addAll(githubReplyJSON);
-      } else {
-        System.out.println("GET request failed: " + responseCode);
-        return "";
+    if (responseCode == HttpURLConnection.HTTP_OK) {
+      BufferedReader in =
+          new BufferedReader(new InputStreamReader(githubConnection.getInputStream()));
+      StringBuilder githubReply = new StringBuilder();
+      String inputLine;
+      while ((inputLine = in.readLine()) != null) {
+        githubReply.append(inputLine);
       }
+      in.close();
+
+      JsonNode repo, githubReplyJSON = JSONMapper.readTree(githubReply.toString());
+      if ((githubReplyJSON.get("total_count").asInt() == 1)
+          && (githubReplyJSON.get("items").size() == 1)
+          && ((repo = githubReplyJSON.get("items").get(0))
+              .get("description")
+              .asText()
+              .endsWith(id))) {
+        reply.put(
+            "url",
+            createPhenoflowURL(repo.get("name").asText(), repo.get("default_branch").asText()));
+      }
+    } else {
+      logger.error(
+          "GitHub api request to identify Phenoflow url from searched id failed: " + responseCode);
     }
-    ArrayNode matches =
-        StreamSupport.stream(githubRepliesJSON.spliterator(), false)
-            .filter(
-                node -> node.has("description") && node.get("description").asText().endsWith(id))
-            .map(
-                node ->
-                    node.has("name") && node.has("default_branch")
-                        ? JSONMapper.createObjectNode()
-                            .put(
-                                "url",
-                                Phenoflow.URL
-                                    + "/workflows/"
-                                    + Phenoflow.GITHUB_URL
-                                    + "/"
-                                    + node.get("name").asText()
-                                    + "/blob/"
-                                    + node.get("default_branch").asText()
-                                    + "/"
-                                    + node.get("name").asText().split("---")[0]
-                                    + ".cwl")
-                        : null)
-            .collect(JSONMapper::createArrayNode, ArrayNode::add, ArrayNode::addAll);
-    return JSONMapper.writeValueAsString(matches);
+    return JSONMapper.writeValueAsString(reply);
   }
 }
