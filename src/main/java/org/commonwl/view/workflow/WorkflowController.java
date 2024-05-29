@@ -684,51 +684,58 @@ public class WorkflowController {
   public String getPhenoflowURL(
       @PathVariable("id") String id, HttpServletRequest request, HttpServletResponse response)
       throws IOException {
-    URL url = new URL(Phenoflow.GITHUB_API_URL.toString());
-    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-    connection.setRequestMethod("GET");
-    connection.setRequestProperty("Accept", "application/vnd.github+json");
-    connection.setRequestProperty("X-GitHub-Api-Version", "2022-11-28");
-    int responseCode = connection.getResponseCode();
+    ObjectMapper JSONMapper = new ObjectMapper();
+    ArrayNode githubReplyJSON = JSONMapper.createArrayNode(),
+        githubRepliesJSON = JSONMapper.createArrayNode();
+    int page = 1;
+    while (githubReplyJSON.size() % 100 == 0) {
+      URL githubRepoURL =
+          new URL(Phenoflow.GITHUB_API_URL.toString() + "?per_page=100&page=" + page++);
+      HttpURLConnection githubConnection = (HttpURLConnection) githubRepoURL.openConnection();
+      githubConnection.setRequestMethod("GET");
+      githubConnection.setRequestProperty("Accept", "application/vnd.github+json");
+      githubConnection.setRequestProperty("X-GitHub-Api-Version", "2022-11-28");
+      int responseCode = githubConnection.getResponseCode();
 
-    if (responseCode == HttpURLConnection.HTTP_OK) {
-      BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-      StringBuilder reply = new StringBuilder();
-      String inputLine;
-      while ((inputLine = in.readLine()) != null) {
-        reply.append(inputLine);
+      if (responseCode == HttpURLConnection.HTTP_OK) {
+        BufferedReader in =
+            new BufferedReader(new InputStreamReader(githubConnection.getInputStream()));
+        StringBuilder githubReply = new StringBuilder();
+        String inputLine;
+        while ((inputLine = in.readLine()) != null) {
+          githubReply.append(inputLine);
+        }
+        in.close();
+
+        githubReplyJSON = (ArrayNode) JSONMapper.readTree(githubReply.toString());
+        githubRepliesJSON.addAll(githubReplyJSON);
+      } else {
+        System.out.println("GET request failed: " + responseCode);
+        return "";
       }
-      in.close();
-
-      ObjectMapper mapper = new ObjectMapper();
-      ArrayNode rootNode = (ArrayNode) mapper.readTree(reply.toString());
-      ArrayNode matches =
-          StreamSupport.stream(rootNode.spliterator(), false)
-              .filter(
-                  node -> node.has("description") && node.get("description").asText().endsWith(id))
-              .map(
-                  node ->
-                      node.has("name") && node.has("default_branch")
-                          ? mapper
-                              .createObjectNode()
-                              .put(
-                                  "name",
-                                  Phenoflow.URL
-                                      + "/workflows/"
-                                      + Phenoflow.GITHUB_URL
-                                      + "/"
-                                      + node.get("name").asText()
-                                      + "/blob/"
-                                      + node.get("default_branch").asText()
-                                      + "/"
-                                      + node.get("name").asText().split("---")[0]
-                                      + ".cwl")
-                          : null)
-              .collect(mapper::createArrayNode, ArrayNode::add, ArrayNode::addAll);
-      return mapper.writeValueAsString(matches);
-    } else {
-      System.out.println("GET request failed: " + responseCode);
-      return "";
     }
+    ArrayNode matches =
+        StreamSupport.stream(githubRepliesJSON.spliterator(), false)
+            .filter(
+                node -> node.has("description") && node.get("description").asText().endsWith(id))
+            .map(
+                node ->
+                    node.has("name") && node.has("default_branch")
+                        ? JSONMapper.createObjectNode()
+                            .put(
+                                "url",
+                                Phenoflow.URL
+                                    + "/workflows/"
+                                    + Phenoflow.GITHUB_URL
+                                    + "/"
+                                    + node.get("name").asText()
+                                    + "/blob/"
+                                    + node.get("default_branch").asText()
+                                    + "/"
+                                    + node.get("name").asText().split("---")[0]
+                                    + ".cwl")
+                        : null)
+            .collect(JSONMapper::createArrayNode, ArrayNode::add, ArrayNode::addAll);
+    return JSONMapper.writeValueAsString(matches);
   }
 }

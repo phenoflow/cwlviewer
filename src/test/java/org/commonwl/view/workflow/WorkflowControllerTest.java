@@ -504,7 +504,7 @@ public class WorkflowControllerTest {
     MockMvc mockMvc = MockMvcBuilders.standaloneSetup(workflowController).build();
 
     mockMvc
-        .perform(get("/phenotype/all/PH2"))
+        .perform(get("/phenotype/all/PH222"))
         .andExpect(status().isOk())
         .andExpect(content().contentType("application/json"));
   }
