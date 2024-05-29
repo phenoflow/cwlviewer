@@ -687,6 +687,19 @@ public class WorkflowController {
   }
 
   /**
+   * Redirect from repository name to full CWL link
+   *
+   * @param phenotype phenotype portion of repository name
+   * @param id id portion of repository name
+   */
+  @GetMapping(value = {"/{phenotype}---{id}"})
+  public RedirectView redirectFullPhenoflowURL(
+      @PathVariable String phenotype, @PathVariable String id) {
+    return new RedirectView(
+        createPhenoflowURL(phenotype + "---" + id, Phenoflow.DEFAULT_BRANCH.toString()));
+  }
+
+  /**
    * Obtain the full CWLViewer link for a Phenoflow phenotype, based on a searched ID
    *
    * @param id ID to search on
@@ -730,6 +743,7 @@ public class WorkflowController {
         reply.put(
             "url",
             createPhenoflowURL(repo.get("name").asText(), repo.get("default_branch").asText()));
+        reply.put("short_url", Phenoflow.URL + "/" + repo.get("name").asText());
       }
     } else {
       logger.error(
