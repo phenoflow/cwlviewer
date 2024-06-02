@@ -118,7 +118,14 @@ function loadInfo(){
                 xhttp.send();
             });
         })).then(function() {
-            URLs.sort();
+            URLs.sort((phenotypeA, phenotypeB) => {
+                let lowerA = phenotypeA.toLowerCase();
+                let lowerB = phenotypeB.toLowerCase();
+                return lowerA < lowerB ? -1 :
+                    lowerA > lowerB ? 1  :
+                    phenotypeA < phenotypeB ? -1 :
+                    phenotypeA > phenotypeB ? 1 : 0;
+            });
             localStorage.setItem("URLs", JSON.stringify(URLs));
             localStorage.setItem("m", JSON.stringify(Array.from(m.entries())));
             localStorage.setItem("defaults", JSON.stringify(Array.from(defaults.entries())));
