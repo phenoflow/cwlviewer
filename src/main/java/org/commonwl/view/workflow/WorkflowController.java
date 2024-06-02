@@ -741,6 +741,8 @@ public class WorkflowController {
               .asText()
               .endsWith(id))) {
         reply.put(
+            "github_url", "https://" + Phenoflow.GITHUB_URL + "/" + repo.get("name").asText());
+        reply.put(
             "url",
             createPhenoflowURL(repo.get("name").asText(), repo.get("default_branch").asText()));
         reply.put("short_url", Phenoflow.URL + "/" + repo.get("name").asText());
