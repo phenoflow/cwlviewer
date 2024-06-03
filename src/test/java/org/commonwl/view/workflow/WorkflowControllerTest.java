@@ -60,6 +60,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 import org.springframework.core.io.PathResource;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -504,12 +505,18 @@ public class WorkflowControllerTest {
     MockMvc mockMvc = MockMvcBuilders.standaloneSetup(workflowController).build();
 
     mockMvc
-        .perform(get("/phenotype/all/PH222"))
+        .perform(
+            post("/phenotype/all")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"importedId\":\"PH222\"}"))
         .andExpect(status().isOk())
         .andExpect(content().contentType("application/json"));
 
     mockMvc
-        .perform(get("/phenotype/all/PH2222"))
+        .perform(
+            post("/phenotype/all")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"importedId\":\"PH2222\"}"))
         .andExpect(status().isOk())
         .andExpect(content().string("{}"));
   }

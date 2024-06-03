@@ -53,6 +53,8 @@ import org.springframework.core.io.PathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BeanPropertyBindingResult;
@@ -713,11 +715,17 @@ public class WorkflowController {
    *
    * @param id ID to search on
    */
-  @GetMapping(
-      value = {"/phenotype/all/{id}"},
+  @PostMapping(
+      value = {"/phenotype/all"},
       produces = "application/json")
   @ResponseBody
-  public String getPhenoflowURL(@PathVariable("id") String id) throws IOException {
+  public ResponseEntity<String> getPhenoflowURL(@RequestBody JsonNode requestBody)
+      throws IOException {
+    if (!requestBody.has("importedId")) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{}");
+    }
+    final String id = requestBody.get("importedId").asText();
+
     ObjectMapper JSONMapper = new ObjectMapper();
     ObjectNode reply = JSONMapper.createObjectNode();
     URL githubRepoURL =
@@ -760,6 +768,6 @@ public class WorkflowController {
       logger.error(
           "GitHub api request to identify Phenoflow url from searched id failed: " + responseCode);
     }
-    return JSONMapper.writeValueAsString(reply);
+    return ResponseEntity.ok(JSONMapper.writeValueAsString(reply));
   }
 }
