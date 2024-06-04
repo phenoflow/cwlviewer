@@ -45,6 +45,60 @@
 
                     <h2>Workflow</h2>
 
+                    <h3 id="getWorkflow">Search for an imported phenotype (Workflow)</h3>
+                    <span class="method post">POST</span>
+                    <pre>/phenoflow/phenotype/all</pre>
+                    <h4>Parameters</h4>
+                    <table class="table">
+                        <tr>
+                            <th>Field</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                        </tr>
+                        <tr>
+                            <td>importedId</td>
+                            <td>String</td>
+                            <td>The original ID associated with the source phenotype that has been imported as a Workflow into Phenoflow (e.g. 'PH222', HDR UK Phenotype Library)</td>
+                        </tr>
+                    </table>
+                    <h4>Input</h4>
+<pre class="highlight json">
+{
+    "importedId": "PH222"
+}</pre>
+                    <h4>Success</h4>
+                    <table class="table">
+                        <tr>
+                            <th>Field</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                        </tr>
+                        <tr>
+                            <td>github_url</td>
+                            <td>String</td>
+                            <td>A link to the Workflow source of the imported phenotype on GitHub</td>
+                        </tr>
+                        <tr>
+                            <td>url</td>
+                            <td>String</td>
+                            <td>A link to a visualisation of the imported phenotype on Phenoflow</td>
+                        </tr>
+                        <tr>
+                            <td>short_url</td>
+                            <td>String</td>
+                            <td>A shorthand link to a visualisation of the imported phenotype on Phenoflow. NB. although potentially easier to work with, this link makes assumptions about the nature of the Workflow that may not hold.</td>
+                        </tr>
+                    </table>
+<pre class="highlight json">
+HTTP/1.1 200 OK
+{
+    "github_url":"https://github.com/phenoflow/Obstructive-and-reflux-uropathy---e0e470b0-1798-11ef-9de4-4d4ea830ad16",
+    "url":"https://kclhi.org/phenoflow/workflows/github.com/phenoflow/Obstructive-and-reflux-uropathy---e0e470b0-1798-11ef-9de4-4d4ea830ad16/blob/read-potential-cases-fhir/Obstructive-and-reflux-uropathy.cwl",
+    "short_url":"https://kclhi.org/phenoflow/Obstructive-and-reflux-uropathy---e0e470b0-1798-11ef-9de4-4d4ea830ad16"
+}</pre>
+                    <h4>Error</h4>
+                    <pre class="highlight http">HTTP/1.1 404 Not Found</pre>
+
                     <h3 id="addWorkflow">Add a new Workflow</h3>
                     <div class="alert alert-info"><strong>Note:</strong> Due to cwltool run times, the creation of workflows is done asynchronously and an intermediate <a href="#queue">queue resource</a> is used</div>
                     <span class="method post">POST</span>
