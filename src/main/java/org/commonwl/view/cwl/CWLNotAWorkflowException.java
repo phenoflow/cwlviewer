@@ -17,23 +17,20 @@
  * under the License.
  */
 
-package org.commonwl.view;
+package org.commonwl.view.cwl;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
+/** Exception thrown when the provided CWL document is not a Workflow. */
+public class CWLNotAWorkflowException extends CWLValidationException {
 
-@SpringBootApplication
-@EnableAsync
-@EnableJpaRepositories
-@EnableScheduling
-@EnableTransactionManagement
-public class CwlViewerApplication {
+  public CWLNotAWorkflowException(String message) {
+    super(message);
+  }
 
-  public static void main(String[] args) {
-    SpringApplication.run(CwlViewerApplication.class, args);
+  public CWLNotAWorkflowException(Throwable throwable) {
+    super(throwable);
+  }
+
+  public CWLNotAWorkflowException(String message, Throwable throwable) {
+    super(message, throwable);
   }
 }

@@ -19,19 +19,21 @@
 
 package org.commonwl.view.workflow;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
 import org.apache.commons.lang.StringUtils;
 import org.commonwl.view.WebConfig;
+import org.commonwl.view.cwl.CWLNotAWorkflowException;
 import org.commonwl.view.cwl.CWLService;
 import org.commonwl.view.cwl.CWLToolStatus;
+import org.commonwl.view.cwl.CWLValidationException;
 import org.commonwl.view.git.GitDetails;
 import org.commonwl.view.graphviz.GraphVizService;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -163,6 +165,10 @@ public class WorkflowController {
           logger.warn("git.notFound " + workflowForm, ex);
           bindingResult.rejectValue("url", "git.notFound");
           return new ModelAndView("index");
+        } catch (CWLNotAWorkflowException ex) {
+          logger.warn("cwl.notAWorkflow " + workflowForm, ex);
+          bindingResult.rejectValue("url", "cwl.notAWorkflow");
+          return new ModelAndView("index");
         } catch (Exception ex) {
           logger.warn("url.parsingError " + workflowForm, ex);
           bindingResult.rejectValue("url", "url.parsingError");
@@ -214,7 +220,7 @@ public class WorkflowController {
    * @param branch The branch of the repository
    * @return The workflow view with the workflow as a model
    */
-  @GetMapping(value = "/workflows/**/*.git/{branch}/**")
+  @GetMapping(value = "/workflows/*/*.git/{branch}/**")
   public ModelAndView getWorkflowGeneric(
       @Value("${applicationURL}") String applicationURL,
       @PathVariable("branch") String branch,
@@ -263,7 +269,7 @@ public class WorkflowController {
    * @param branch The branch of repository
    */
   @GetMapping(
-      value = "/robundle/**/*.git/{branch}/**",
+      value = "/robundle/*/*/*.git/{branch}/**",
       produces = "application/vnd.wf4ever.robundle+zip")
   @ResponseBody
   public Resource getROBundleGeneric(
@@ -314,7 +320,7 @@ public class WorkflowController {
    *
    * @param branch The branch of repository
    */
-  @GetMapping(value = "/graph/svg/**/*.git/{branch}/**", produces = "image/svg+xml")
+  @GetMapping(value = "/graph/svg/*/*/*.git/{branch}/**", produces = "image/svg+xml")
   @ResponseBody
   public Resource downloadGraphSvgGeneric(
       @PathVariable("branch") String branch,
@@ -364,7 +370,7 @@ public class WorkflowController {
    *
    * @param branch The branch of repository
    */
-  @GetMapping(value = "/graph/png/**/*.git/{branch}/**", produces = "image/png")
+  @GetMapping(value = "/graph/png/*/*/*.git/{branch}/**", produces = "image/png")
   @ResponseBody
   public Resource downloadGraphPngGeneric(
       @PathVariable("branch") String branch,
@@ -414,7 +420,7 @@ public class WorkflowController {
    *
    * @param branch The branch of repository
    */
-  @GetMapping(value = "/graph/xdot/**/*.git/{branch}/**", produces = "text/vnd.graphviz")
+  @GetMapping(value = "/graph/xdot/*/*/*.git/{branch}/**", produces = "text/vnd.graphviz")
   @ResponseBody
   public Resource downloadGraphDotGeneric(
       @PathVariable("branch") String branch,
@@ -629,7 +635,11 @@ public class WorkflowController {
           } catch (WorkflowNotFoundException ex) {
             logger.warn("git.notFound " + workflowForm, ex);
             errors.rejectValue(
-                "url", "git.notFound", "The workflow could not be found within the repository");
+                "url", "git.notFound", "The workflow could not be found within the repository.");
+          } catch (CWLValidationException ex) {
+            logger.warn("cwl.invalid " + workflowForm, ex);
+            errors.rejectValue(
+                "url", "cwl.invalid", "The workflow had a parsing error: " + ex.getMessage());
           } catch (IOException ex) {
             logger.warn("url.parsingError " + workflowForm, ex);
             errors.rejectValue(
@@ -658,7 +668,8 @@ public class WorkflowController {
     }
   }
 
-  private Resource getGraphFromInputStream(InputStream in, String format) throws IOException {
+  private Resource getGraphFromInputStream(InputStream in, String format)
+      throws IOException, WorkflowNotFoundException, CWLValidationException {
     Workflow workflow =
         cwlService.parseWorkflowNative(in, null, "workflow"); // first workflow will do
     InputStream out = graphVizService.getGraphStream(workflow.getVisualisationDot(), format);
