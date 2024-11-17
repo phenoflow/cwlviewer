@@ -19,11 +19,11 @@
 
 package org.commonwl.view.workflow;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.commonwl.view.cwl.RDFService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
@@ -87,7 +87,7 @@ public class WorkflowPermalinkController {
       produces = {
         MediaType.TEXT_HTML_VALUE,
         MediaType.APPLICATION_JSON_VALUE,
-        MediaType.APPLICATION_JSON_UTF8_VALUE
+        MediaType.APPLICATION_JSON_VALUE
       })
   public void goToViewer(
       @PathVariable("commitid") String commitId,
