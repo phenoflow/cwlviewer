@@ -700,11 +700,8 @@ public class WorkflowController {
     return new RedirectView(
         createPhenoflowURL(phenotype + "---" + id, Phenoflow.DEFAULT_BRANCH.toString()));
   }
-  
-  /**
-   * Redirect from legacy library link
-   *
-   */
+
+  /** Redirect from legacy library link */
   @GetMapping(value = {"/phenotype/all"})
   public RedirectView redirectLegacyLibraryLink() {
     return new RedirectView(Phenoflow.URL.toString());

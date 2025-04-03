@@ -283,7 +283,7 @@ public class Workflow extends BaseEntity implements Serializable {
   }
 
   public String getRoBundleLink() {
-    return retrievedFrom.getInternalUrl().replaceFirst("/phenoflow/workflows", "/robundle");
+    return retrievedFrom.getInternalUrl().replaceFirst("/workflows", "/robundle");
   }
 
   /**

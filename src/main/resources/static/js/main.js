@@ -92,13 +92,15 @@ var defaults = new Map();
 var URLs = [];
 
 function loadInfo(){
+    document.getElementById('url').disabled = true
     if((storedURLs = localStorage.getItem("URLs")) && (storedM = localStorage.getItem("m")) && (storedDefaults = localStorage.getItem("defaults"))) {
         URLs = JSON.parse(storedURLs);
         m = new Map(JSON.parse(storedM));
         defaults = new Map(JSON.parse(storedDefaults));
         loadUrls();
+        document.getElementById('url').disabled = false
     } else {
-        Promise.all(Array.from({ length: 11 }, function(element, index) {
+        Promise.all(Array.from({ length: 12 }, function(element, index) {
             return new Promise(function(resolve, reject) {
                 let xhttp = new XMLHttpRequest();
                 xhttp.onreadystatechange = function() {
@@ -130,6 +132,7 @@ function loadInfo(){
             localStorage.setItem("m", JSON.stringify(Array.from(m.entries())));
             localStorage.setItem("defaults", JSON.stringify(Array.from(defaults.entries())));
             loadUrls();
+            document.getElementById('url').disabled = false
         })
         .catch(function(error) {
             console.error(error)

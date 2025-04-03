@@ -115,5 +115,4 @@ public class WorkflowFormValidatorTest {
     assertNull(willBeNull);
     assertTrue(errors.hasErrors());
   }
-
 }
