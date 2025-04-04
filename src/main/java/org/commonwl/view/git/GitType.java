@@ -24,5 +24,6 @@ public enum GitType {
   GITHUB,
   GITLAB,
   BITBUCKET,
+  GITEA,
   GENERIC
 }

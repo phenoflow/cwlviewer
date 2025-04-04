@@ -1,0 +1,77 @@
+version: '3.9'
+networks:
+  hi_default:
+    external: true
+  postgres:
+  sparql:
+volumes:
+  bundle:
+  git:
+  graphviz:
+  postgres:
+  sparql:
+services:
+  spring:
+    restart: always
+    # To run from this source code instead of Docker hub,
+    # disable "image:"" and enable "build:" below
+    # image: commonworkflowlanguage/cwlviewer:latest
+    build: .
+    networks:
+     - postgres
+     - sparql
+     - hi_default
+    volumes:
+     - type: volume
+       source: bundle
+       target: /data/bundle
+     - type: volume
+       source: git
+       target: /data/git
+     - type: volume
+       source: graphviz
+       target: /data/graphviz
+    environment:
+     - SPARQL_ENDPOINT=http://sparql:3030/cwlviewer/
+     - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/cwlviewer
+     - SPRING_DATASOURCE_USERNAME=sa
+     - SPRING_DATASOURCE_PASSWORD=sa
+     - BUNDLESTORAGE=/data/bundle
+     - GITSTORAGE=/data/git
+     - GRAPHVIZSTORAGE=/data/graphviz
+    ports:
+     - 8080:8080
+  postgres:
+    restart: always
+    build: postgres
+    networks:
+     - postgres
+    command: postgres -c listen_addresses='*' -c log_statement=all
+    environment:
+      - POSTGRES_USER=sa
+      - POSTGRES_PASSWORD=sa
+      - POSTGRES_DB=cwlviewer
+      - PGDATA=/var/lib/postgresql/data/cwlviewer/
+    volumes:
+      - type: volume
+        source: postgres
+        target: /var/lib/postgresql/data
+  sparql:
+    restart: always
+## For debugging, expose the Fuseki port by enabling:
+#    ports:
+#     - "3030:3030"
+## To find the admin password, try:
+##   docker-compose exec sparql grep admin /fuseki/shiro.ini
+    build: jena-fuseki
+    networks:
+      - sparql
+    volumes:
+      - type: volume
+        source: sparql
+        target: /fuseki
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    command: "/start-jena.sh"

@@ -1,5 +1,5 @@
-const searchQueryRepos = 'https://api.github.com/orgs/phenoflow/repos';
-const searchQueryHeader = 'https://api.github.com/repos/phenoflow/';
+const searchQueryRepos = 'http://localhost:3003/git/api/v1/orgs/phenoflow/repos';
+const searchQueryHeader = 'http://localhost:3003/git/api/v1/repos/phenoflow/';
 
 var m = new Map();
 var defaults = new Map();

@@ -50,6 +50,11 @@ public class WorkflowFormValidator {
       "^https?:\\/\\/gitlab\\.com\\/([A-Za-z0-9_.-]+)\\/([A-Za-z0-9_.-]+)\\/?(?:tree|blob)\\/([^/]+)(?:\\/(.+\\.cwl))$";
   private static final Pattern gitlabCwlPattern = Pattern.compile(GITLAB_CWL_REGEX);
 
+  // URL validation for cwl files on gitea
+  private static final String GITEA_CWL_REGEX =
+      "^https?:\\/\\/phenoflow-proxy-1\\/git\\/([A-Za-z0-9_.-]+)\\/([A-Za-z0-9_.-]+)\\/([^/]+)(?:\\/(.+\\.cwl))$";
+  private static final Pattern giteaCwlPattern = Pattern.compile(GITEA_CWL_REGEX);
+
   // URL validation for directories on gitlab.com
   private static final String GITLAB_DIR_REGEX =
       "^https?:\\/\\/gitlab\\.com\\/([A-Za-z0-9_.-]+)\\/([A-Za-z0-9_.-]+)\\/?(?:(?:tree|blob)\\/([^/]+)\\/?(.*)?)?$";
@@ -99,6 +104,14 @@ public class WorkflowFormValidator {
       m = gitlabCwlPattern.matcher(form.getUrl());
       if (m.find()) {
         repoUrl = "https://gitlab.com/" + m.group(1) + "/" + m.group(2) + ".git";
+        if (branch == null) branch = m.group(3);
+        if (path == null) path = m.group(4);
+      }
+
+      // gitea URL
+      m = giteaCwlPattern.matcher(form.getUrl());
+      if (m.find()) {
+        repoUrl = "http://phenoflow-proxy-1/git/" + m.group(1) + "/" + m.group(2);
         if (branch == null) branch = m.group(3);
         if (path == null) path = m.group(4);
       }

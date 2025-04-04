@@ -84,8 +84,8 @@ require(['jquery'],
 
 
 const org = 'phenoflow';
-const searchQueryRepos = 'https://api.github.com/orgs/' + org + '/repos';
-const searchQueryHeader = 'https://api.github.com/repos/' + org + '/';
+const searchQueryRepos = 'http://localhost:3003/git/api/v1/orgs/' + org + '/repos';
+const searchQueryHeader = 'http://localhost:3003/git/api/v1/repos/' + org + '/';
 
 var m = new Map();
 var defaults = new Map();
@@ -108,9 +108,10 @@ function loadInfo(){
                         let all = JSON.parse(this.response);
                         all.forEach(element => {
                             if(element['name'].includes('---')) {
-                                URLs.push(element['clone_url']);
-                                m.set(element['clone_url'], element['name']);
-                                defaults.set(element['clone_url'], element['default_branch']);
+                                let cloneUrl = element['clone_url'].replace('localhost:3003', 'phenoflow-proxy-1')
+                                URLs.push(cloneUrl);
+                                m.set(cloneUrl, element['name']);
+                                defaults.set(cloneUrl, element['default_branch']);
                             }
                         });
                         resolve()
