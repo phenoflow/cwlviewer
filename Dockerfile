@@ -42,10 +42,10 @@ RUN apk add --update \
   heimdal \
   && rm -rf /var/cache/apk/*
 
-COPY certs/phenoflow.pem /tmp/phenoflow.pem
+COPY src/main/resources/ssl/phenoflow.pem /tmp/phenoflow.pem
 RUN (cd /tmp && keytool -import -file phenoflow.pem -alias phenoflow -noprompt -storepass changeit -keystore "$JAVA_HOME/lib/security/cacerts")
 RUN rm /tmp/phenoflow.pem
-COPY certs/phenoflow.pem /usr/local/share/ca-certificates/
+COPY src/main/resources/ssl/phenoflow.pem /usr/local/share/ca-certificates/
 RUN update-ca-certificates
 ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 
