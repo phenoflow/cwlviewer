@@ -154,7 +154,7 @@ public class GitDetails implements Serializable {
             + path
             + packedPart;
       case VCS:
-        return "http://"
+        return "https://"
             + normaliseUrl(repoUrl)
             + "/"
             + branchOverride

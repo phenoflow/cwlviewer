@@ -111,7 +111,7 @@ public class WorkflowFormValidator {
       // vcs URL
       m = vcsCwlPattern.matcher(form.getUrl());
       if (m.find()) {
-        repoUrl = "http://" + m.group(1) + "/" + m.group(2) + "/" + m.group(3);
+        repoUrl = "https://" + m.group(1) + "/" + m.group(2) + "/" + m.group(3);
         if (branch == null) branch = m.group(3);
         if (path == null) path = m.group(4);
       }

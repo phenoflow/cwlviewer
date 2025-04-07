@@ -9,7 +9,6 @@ RUN apk add --update \
 
 RUN gem install licensee
 
-
 FROM docker.io/library/maven:3-eclipse-temurin-17-alpine
 MAINTAINER Stian Soiland-Reyes <stain@apache.org>
 
@@ -42,6 +41,13 @@ RUN apk add --update \
   ruby \
   heimdal \
   && rm -rf /var/cache/apk/*
+
+COPY certs/phenoflow.pem /tmp/phenoflow.pem
+RUN (cd /tmp && keytool -import -file phenoflow.pem -alias phenoflow -noprompt -storepass changeit -keystore "$JAVA_HOME/lib/security/cacerts")
+RUN rm /tmp/phenoflow.pem
+COPY certs/phenoflow.pem /usr/local/share/ca-certificates/
+RUN update-ca-certificates
+ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 
 ENV PATH="/root/.local/bin:${PATH}"
 

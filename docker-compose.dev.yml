@@ -40,7 +40,7 @@ services:
      - GITSTORAGE=/data/git
      - GRAPHVIZSTORAGE=/data/graphviz
     ports:
-     - 8080:8080
+     - 8443:8443
   postgres:
     restart: always
     build: postgres

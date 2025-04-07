@@ -21,3 +21,10 @@ build/
 nbbuild/
 nbdist/
 .nb-gradle/docker-compose.override.yml
+
+certs/
+*.crt
+*.csr
+*.key
+*.pem
+*.srl
