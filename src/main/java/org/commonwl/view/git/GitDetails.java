@@ -118,7 +118,7 @@ public class GitDetails implements Serializable {
         case "bitbucket.org":
           return GitType.BITBUCKET;
         case "phenoflow-proxy-1":
-          return GitType.GITEA;
+          return GitType.VCS;
         default:
           return GitType.GENERIC;
       }
@@ -153,7 +153,7 @@ public class GitDetails implements Serializable {
             + "/"
             + path
             + packedPart;
-      case GITEA:
+      case VCS:
         return "http://"
             + normaliseUrl(repoUrl)
             + "/"
