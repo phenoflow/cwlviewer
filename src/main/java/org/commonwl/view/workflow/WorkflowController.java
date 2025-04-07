@@ -47,6 +47,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.PathResource;
@@ -74,6 +75,9 @@ public class WorkflowController {
   private final WorkflowService workflowService;
   private final CWLService cwlService;
   private final GraphVizService graphVizService;
+
+  @Autowired
+  private Environment env;
 
   /**
    * Autowired constructor to initialise objects used by the controller.
@@ -664,7 +668,8 @@ public class WorkflowController {
     } else {
       return new ModelAndView("workflow", "workflow", workflowModel)
           .addObject("lineSeparator", System.getProperty("line.separator"))
-          .addObject("formats", WebConfig.Format.values());
+          .addObject("formats", WebConfig.Format.values())
+          .addObject("githubBaseUrl", env.getProperty("phenoflow.githubBaseUrl"));
     }
   }
 
@@ -676,9 +681,9 @@ public class WorkflowController {
   }
 
   private String createPhenoflowURL(String name, String branch) {
-    return Phenoflow.URL
+    return env.getProperty("phenoflow.url")
         + "/workflows/"
-        + Phenoflow.GITHUB_URL
+        + env.getProperty("phenoflow.internal.githubRepositoryPrefix")
         + "/"
         + name
         + "/blob/"
@@ -698,13 +703,13 @@ public class WorkflowController {
   public RedirectView redirectFullPhenoflowURL(
       @PathVariable String phenotype, @PathVariable String id) {
     return new RedirectView(
-        createPhenoflowURL(phenotype + "---" + id, Phenoflow.DEFAULT_BRANCH.toString()));
+        createPhenoflowURL(phenotype + "---" + id, env.getProperty("phenoflow.defaultBranch").toString()));
   }
 
   /** Redirect from legacy library link */
   @GetMapping(value = {"/phenotype/all"})
   public RedirectView redirectLegacyLibraryLink() {
-    return new RedirectView(Phenoflow.URL.toString());
+    return new RedirectView(env.getProperty("phenoflow.url").toString());
   }
 
   /**
@@ -727,10 +732,10 @@ public class WorkflowController {
     ObjectNode reply = JSONMapper.createObjectNode();
     URL githubRepoURL =
         new URL(
-            Phenoflow.GITHUB_API_URL.toString()
-                + "/search/repositories?q="
-                + id
-                + "+org:Phenoflow");
+          env.getProperty("phenoflow.internal.githubBaseUrl").toString()
+              + "/search/repositories?q="
+              + id
+              + "+org:Phenoflow");
     HttpURLConnection githubConnection = (HttpURLConnection) githubRepoURL.openConnection();
     githubConnection.setRequestMethod("GET");
     githubConnection.setRequestProperty("Accept", "application/vnd.github+json");
@@ -755,11 +760,11 @@ public class WorkflowController {
               .asText()
               .endsWith(id))) {
         reply.put(
-            "github_url", "https://" + Phenoflow.GITHUB_URL + "/" + repo.get("name").asText());
+            "github_url", env.getProperty("phenoflow.githubRepositoryPrefix") + "/" + repo.get("name").asText());
         reply.put(
             "url",
             createPhenoflowURL(repo.get("name").asText(), repo.get("default_branch").asText()));
-        reply.put("short_url", Phenoflow.URL + "/" + repo.get("name").asText());
+        reply.put("short_url", env.getProperty("phenoflow.url") + "/" + repo.get("name").asText());
       }
     } else {
       logger.error(

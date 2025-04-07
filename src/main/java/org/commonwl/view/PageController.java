@@ -20,6 +20,7 @@
 package org.commonwl.view;
 
 import org.commonwl.view.workflow.WorkflowForm;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,8 +37,13 @@ public class PageController {
    */
   @GetMapping("/")
   public String homePage(
-      Model model, @RequestParam(value = "url", required = false) String defaultURL) {
+      Model model, @RequestParam(value = "url", required = false) String defaultURL, 
+      @Value("${phenoflow.githubBaseUrl}") String githubBaseUrl, @Value("${phenoflow.githubHost}") String githubHost, 
+      @Value("${phenoflow.internal.githubHost}") String internalGithubHost) {
     model.addAttribute("workflowForm", new WorkflowForm(defaultURL));
+    model.addAttribute("githubBaseUrl", githubBaseUrl);
+    model.addAttribute("githubHost", githubHost);
+    model.addAttribute("internalGithubHost", internalGithubHost);
     return "index";
   }
 

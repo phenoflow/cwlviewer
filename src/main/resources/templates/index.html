@@ -69,6 +69,13 @@
 
         <div th:replace="fragments/footer :: copy"></div>
 
+        <script th:inline="javascript">
+            var config = {
+                githubBaseUrl: /*[[${githubBaseUrl}]]*/ 'https://api.github.com',
+                githubHost: /*[[${githubHost}]]*/ 'github.com',
+                internalGithubHost: /*[[${internalGithubHost}]]*/ 'github.com',
+            };
+        </script>
         <script src="/phenoflow/bower_components/requirejs/require.js" data-main="/phenoflow/js/main.js"></script>
     </body>
 </html>

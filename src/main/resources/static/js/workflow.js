@@ -470,7 +470,7 @@ function getElements(array){
 
 getElements(array);
 
-var query = 'http://localhost:3003/git/api/v1/repos/' + org + '/' + repo + '/branches';
+var query = config.githubBaseUrl + '/repos/' + org + '/' + repo + '/branches';
 
 disease_selection.value = url;
 function load_branch(){
@@ -522,7 +522,7 @@ function isMainCWL(s){
 function select_path(){
     if (branch_selection.value != ''){
         main_path.innerHTML = '';
-        var quest = 'http://localhost:3003/git/api/v1/repos/' + org + '/' + repo + '/git/trees/' + branch_selection.value;
+        var quest = config.githubBaseUrl + '/repos/' + org + '/' + repo + '/git/trees/' + branch_selection.value;
         let xhttp = new XMLHttpRequest();
         xhttp.open('GET', quest, true);
         xhttp.onreadystatechange = function() {

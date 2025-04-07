@@ -347,6 +347,11 @@ digraph G {
 
 <div th:replace="fragments/footer :: copy"></div>
 
+<script th:inline="javascript">
+    var config = {
+        githubBaseUrl: /*[[${githubBaseUrl}]]*/ 'https://api.github.com'
+    };
+</script>
 <script src="/phenoflow/bower_components/requirejs/require.js" data-main="/phenoflow/js/workflow.js"></script>
 </body>
 </html>
